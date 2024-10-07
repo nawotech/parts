@@ -1,0 +1,38 @@
+name: Rebuild SQLite Database
+
+# Trigger on push or pull request affecting CSV files
+on:
+  push:
+    paths:
+      - '*.csv'
+  pull_request:
+    paths:
+      - '*.csv'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install SQLite
+        run: sudo apt-get install sqlite3
+
+      - name: Generate SQLite database
+        run: |
+          python3 parts_db_create.py
+      
+      - name: Commit the updated SQLite database
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add parts.sqlite
+          git commit -m "Update SQLite database"
+          git push
